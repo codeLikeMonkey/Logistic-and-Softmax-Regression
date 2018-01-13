@@ -4,7 +4,10 @@ import numpy as np
 
 mndata = MNIST('./mnist_data')
 mndata.gz = True
-images, labels = mndata.load_training()
+images, labels = mndata.load_testing()
+
+images = images[0:2000]
+labels = labels[0:2000]
 
 def fetch_image(number):
     new_labels = np.array(list(labels))
