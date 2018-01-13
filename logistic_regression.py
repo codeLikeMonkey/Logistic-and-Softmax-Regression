@@ -16,7 +16,7 @@ def gradient(X,Target):
     accuracy = []
     eta_0 = 0.0001
     T = 5
-    for epoch in range(1000):
+    for epoch in range(450):
         eta = eta_0 / (1 + epoch / T)
         W = W + eta * np.dot(X, Target -sigmoid(W, X))
         # print(1-check(W,X,Target))
