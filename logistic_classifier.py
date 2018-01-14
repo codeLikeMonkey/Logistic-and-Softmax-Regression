@@ -5,9 +5,10 @@ import load_test_data
 import matplotlib.pyplot as plt
 
 
+
 def check(W,X,Target):
     '''
-
+    get the error rate
     :param W: Weights , m * 1 vector
     :param X: Input data (matrix) m * N matrix, X[i,j] represents  ith feature of jth data
     :param Target: target, for example, training target, test target, hold out target
@@ -42,29 +43,52 @@ def loss(Target,Y):
     return float(E)
 
 
-def loss_with_regularization(Target,Y,Weights):
-
-    E = loss(Target,Y) + Weights
-
-
+# def loss_with_regularization(Target,Y,Weights):
+#
+#     E = loss(Target,Y) + Weights
 
 
 
-def gradient(X,Target):
 
-    W = np.zeros((X.shape[0],1))
-    accuracy = []
-    eta_0 = 0.0001
-    T = 5
+
+# def gradient(X,Target):
+#
+#     W = np.zeros((X.shape[0],1))
+#     accuracy = []
+#     eta_0 = 0.0001
+#     T = 5
+#     for epoch in range(450):
+#         eta = eta_0 / (1 + epoch / T)
+#         W = W + eta * np.dot(X, Target -sigmoid(W, X))
+#         # print(1-check(W,X,Target))
+#         accuracy.append(1-check(W,X,Target))
+#     return W,accuracy
+
+
+def regularized_gradient_descent(Lamada,train_set,train_target):
+    train_set_weights = np.zeros((train_set.shape[0],1))
+    train_set_weights[-1] = 1
+    train_set_accuracy = []
+    train_set_loss = []
+    eta_0 = 0.001
+    T = 10
+    # Lamada = 0.01
+
     for epoch in range(450):
+        train_set_accuracy.append(1 - check(train_set_weights, train_set, train_target))
+        #
+        train_set_loss.append(loss(train_target, sigmoid(train_set_weights, train_set)))
+
         eta = eta_0 / (1 + epoch / T)
-        W = W + eta * np.dot(X, Target -sigmoid(W, X))
-        # print(1-check(W,X,Target))
-        accuracy.append(1-check(W,X,Target))
-    return W,accuracy
+        train_set_weights = train_set_weights + eta * (np.dot(train_set,train_target - sigmoid(train_set_weights, train_set)) + Lamada *2 * train_set_weights)
+
+    return train_set_weights, train_set_accuracy
 
 
-def early_stoping(train_set,train_target,hold_out_set,hold_out_target,test_set,test_target):
+
+
+
+def gradient_descent(train_set,train_target,hold_out_set,hold_out_target,test_set,test_target):
     '''
 
     :param train_set: training set, m * N matrix
@@ -205,39 +229,46 @@ if __name__ == "__main__":
     train_input_2vs3,train_target_2vs3,hold_out_input_2vs3,hold_out_target_2vs3 = make_train_data(2,3)
     test_input_2vs3, test_target_2vs3 = make_test_data(2, 3)
 
-    train_Weights_2vs3,train_accuracy_2vs3,hold_out_accuracy_2vs3,test_set_accuracy_2vs3,train_set_loss_2vs3,hold_out_loss_2vs3,test_set_loss_2vs3 = early_stoping(train_input_2vs3, train_target_2vs3,hold_out_input_2vs3,hold_out_target_2vs3,test_input_2vs3,test_target_2vs3)
-
-
-    #train_Weights_2vs3,train_accuracy_2vs3 = gradient(train_input_2vs3,train_target_2vs3)
-
-    plt.figure(1)
-    ax = plt.gca()
-    ax.set_title("Weights Pattern 2 vs 3")
-    plot_weights(train_Weights_2vs3)
-    plt.show()
+    # train_Weights_2vs3,train_accuracy_2vs3,hold_out_accuracy_2vs3,test_set_accuracy_2vs3,train_set_loss_2vs3,hold_out_loss_2vs3,test_set_loss_2vs3 = gradient_descent(train_input_2vs3, train_target_2vs3,hold_out_input_2vs3,hold_out_target_2vs3,test_input_2vs3,test_target_2vs3)
+    # #train_Weights_2vs3,train_accuracy_2vs3 = gradient(train_input_2vs3,train_target_2vs3)
     #
-    plt.figure(2)
-    ax = plt.gca()
-    ax.set_xlim([0,500])
-    ax.set_title("Correction Rate over Training")
-    ax.set_xlabel("Training Epochs")
-    ax.set_ylabel("Correction Rate Percentage ")
-    plot_accuracy(train_accuracy_2vs3)
-    plot_accuracy(hold_out_accuracy_2vs3)
-    plot_accuracy(test_set_accuracy_2vs3)
-    plt.show()
+    # plt.figure(1)
+    # ax = plt.gca()
+    # ax.set_title("Weights Pattern 2 vs 3")
+    # plot_weights(train_Weights_2vs3)
+    # plt.show()
+    # #
+    # plt.figure(2)
+    # ax = plt.gca()
+    # ax.set_xlim([0,500])
+    # ax.set_title("Correction Rate over Training")
+    # ax.set_xlabel("Training Epochs")
+    # ax.set_ylabel("Correction Rate Percentage ")
+    # plot_accuracy(train_accuracy_2vs3)
+    # plot_accuracy(hold_out_accuracy_2vs3)
+    # plot_accuracy(test_set_accuracy_2vs3)
+    # plt.show()
+    #
+    # plt.figure(3)
+    # ax = plt.gca()
+    # # ax.grid()
+    # ax.set_title("Loss (E) over Training")
+    # ax.set_xlabel("Training Epochs")
+    # plot_loss(train_set_loss_2vs3,'r')
+    # plot_loss(hold_out_loss_2vs3,'b')
+    # plot_loss(test_set_loss_2vs3,'g')
+    # ax.legend(['Training Set','Hold Out Set','Test Set'])
+    # plt.show()
 
-    plt.figure(3)
+
+    #regulized logistic regression
+    LAMADA = [2,1,0.1,0.001,0.00001]
+    for Lamada in LAMADA:
+        reg_train_Weights_2vs3,reg_train_accuracy_2vs3=regularized_gradient_descent(Lamada,train_input_2vs3,train_target_2vs3)
+        plot_accuracy(reg_train_accuracy_2vs3)
     ax = plt.gca()
-    # ax.grid()
-    ax.set_title("Loss (E) over Training")
-    ax.set_xlabel("Training Epochs")
-    plot_loss(train_set_loss_2vs3,'r')
-    plot_loss(hold_out_loss_2vs3,'b')
-    plot_loss(test_set_loss_2vs3,'g')
-    ax.legend(['Training Set','Hold Out Set','Test Set'])
+    ax.legend(["lamada = 2","lamada = 1","lamada = 0.1","lamada = 0.001","lamada = 0.00001"])
     plt.show()
-    # print(train_set_loss_2vs3)
 
 
 
