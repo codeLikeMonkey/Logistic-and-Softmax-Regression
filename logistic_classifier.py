@@ -6,21 +6,48 @@ import matplotlib.pyplot as plt
 
 
 def check(W,X,Target):
+    '''
+
+    :param W: Weights , m * 1 vector
+    :param X: Input data (matrix) m * N matrix, X[i,j] represents  ith feature of jth data
+    :param Target: target, for example, training target, test target, hold out target
+    :return: error rate within 0-1
+    '''
     return np.sum(np.abs(np.round(sigmoid(W,X)) - Target))/Target.shape[0]
 
 def sigmoid(W,X):
+    '''
+
+    :param W: weights, m * 1 vector
+    :param X: input data (matrix) m * N matrix, X[i,j] represents  ith feature of jth data
+    :return: N * 1 vector
+    '''
     z = np.dot(W.T,X)
     Y = 1.0 / (1.0 + np.exp(-z))
 
     return Y.T
 
 def loss(Target,Y):
+    '''
+
+    :param Target: target, N * 1 vector for example, training target, test target, hold out target
+    :param Y: sigmoid result N * 1 vector
+    :return: loss, float
+    '''
     E = 0
     # for n in range(len(Target)):
         # E = E + np.power(Target[n],Y[n]) * np.power(1-Y[n],Target[n])
-    E = np.dot(np.log10(Y.T+1e-3),Target) + np.dot(np.log10(1 - Y.T+1e-3),1 - Target)
+    E = -np.dot(np.log10(Y.T+1e-5),Target) + np.dot(np.log10(1 - Y.T+1e-5),1 - Target)
     # print()
-    return -float(E)
+    return float(E)
+
+
+def loss_with_regularization(Target,Y,Weights):
+
+    E = loss(Target,Y) + Weights
+
+
+
 
 
 def gradient(X,Target):
@@ -38,6 +65,16 @@ def gradient(X,Target):
 
 
 def early_stoping(train_set,train_target,hold_out_set,hold_out_target,test_set,test_target):
+    '''
+
+    :param train_set: training set, m * N matrix
+    :param train_target: training target, N * 1 vector
+    :param hold_out_set:
+    :param hold_out_target:
+    :param test_set:
+    :param test_target:
+    :return: train_set_weights,train_set_accuracy,hold_out_accuracy,test_set_accuracy,train_set_loss,hold_out_loss,test_set_loss
+    '''
     
     train_set_weights = np.zeros((train_set.shape[0],1))
     train_set_weights[-1] = 1
@@ -68,15 +105,31 @@ def early_stoping(train_set,train_target,hold_out_set,hold_out_target,test_set,t
     
 
 def plot_weights(Weights):
+    '''
+
+    :param Weights: weights
+    :return: picture in 28 * 28
+    '''
     plt.imshow(Weights[0:-1].reshape(28,28))
 
 def plot_accuracy(accuracy):
+    '''
+
+    :param accuracy: accuracy for all epochs, 1 * N vector
+    :return: accuracy plot
+    '''
     x = np.arange(len(accuracy))
     y = np.array(accuracy) * 100
 
     # plt.plot(x,y,marker = '.',linestyle = '-')
     plt.plot(x, y)
 def plot_loss(loss,color):
+    '''
+
+    :param loss: loss for all epochs, 1 * N vector
+    :param color: specifiy color, example 'r','b'
+    :return: plot of loss
+    '''
     x = np.arange(len(loss))
     y = np.array(loss)
 
@@ -87,6 +140,17 @@ def plot_loss(loss,color):
 
 
 def make_train_data(numberA,numberB):
+    '''
+
+    :param numberA: specify which number we choose to make training data, for example 2
+    :param numberB: specify which number we choose to make training data, for example 3
+    :return:
+    train_input : data, (m+1) * N matrix
+    train_target : target N * 1 matrix
+    hold_out_input
+    hold_out_target
+
+    '''
 
     image_A = load_train_data.fetch_image(numberA)
     image_B = load_train_data.fetch_image(numberB)
@@ -113,6 +177,14 @@ def make_train_data(numberA,numberB):
     return train_input,train_target,hold_out_input,hold_out_target
 
 def make_test_data(numberA,numberB):
+    '''
+
+    :param numberA: specify which number we choose to make training data, for example 2
+    :param numberB: specify which number we choose to make training data, for example 3
+    :return:
+    test_input : (m + 1) * N matrix
+    test_target : N * 1 vector
+    '''
     test_image_A = load_test_data.fetch_image(numberA)
     test_image_B = load_test_data.fetch_image(numberB)
     test_input_A = np.concatenate((test_image_A, np.ones((1, test_image_A.shape[0])).T), axis=1).T
