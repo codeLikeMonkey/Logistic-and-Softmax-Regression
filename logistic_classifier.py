@@ -43,40 +43,20 @@ def loss(Target,Y):
     return -float(E)/len(Target)
 
 
-# def loss_with_regularization(Target,Y,Weights):
-#
-#     E = loss(Target,Y) + Weights
-
-
-
-
-
-# def gradient(X,Target):
-#
-#     W = np.zeros((X.shape[0],1))
-#     accuracy = []
-#     eta_0 = 0.0001
-#     T = 5
-#     for epoch in range(450):
-#         eta = eta_0 / (1 + epoch / T)
-#         W = W + eta * np.dot(X, Target -sigmoid(W, X))
-#         # print(1-check(W,X,Target))
-#         accuracy.append(1-check(W,X,Target))
-#     return W,accuracy
-
-
-def regularized_gradient_descent(type_of_regularization,Lamada,train_set,train_target):
+def regularized_gradient_descent(type_of_regularization,Lamada,train_set,train_target,test_set,test_target):
     train_set_weights = np.zeros((train_set.shape[0],1))
     train_set_weights[-1] = 1
     train_set_accuracy = []
     train_set_loss = []
     length_of_weights = []
+    test_set_accuracy = []
     eta_0 = 0.001
     T = 100
     # Lamada = 0.01
 
     for epoch in range(100):
         train_set_accuracy.append(1 - check(train_set_weights, train_set, train_target))
+        test_set_accuracy.append(1 - check(train_set_weights, test_set, test_target))
         #
         train_set_loss.append(loss(train_target, sigmoid(train_set_weights, train_set)))
 
@@ -90,7 +70,7 @@ def regularized_gradient_descent(type_of_regularization,Lamada,train_set,train_t
         length_of_weights.append(np.linalg.norm(train_set_weights))
 
 
-    return length_of_weights,train_set_weights, train_set_accuracy
+    return length_of_weights,train_set_weights,train_set_accuracy,test_set_accuracy
 
 
 
@@ -292,7 +272,7 @@ if __name__ == "__main__":
     # #train_Weights_2vs3,train_accuracy_2vs3 = gradient(train_input_2vs3,train_target_2vs3)
     #
 
-    train_Weights_2vs3, train_accuracy_2vs3 = mini_batch_gradient_descent(train_input_2vs3, train_target_2vs3)
+    # train_Weights_2vs3, train_accuracy_2vs3 = mini_batch_gradient_descent(train_input_2vs3, train_target_2vs3)
     # plt.figure(1)
     # ax = plt.gca()
     # ax.set_title("Weights Pattern 2 vs 3")
@@ -323,15 +303,33 @@ if __name__ == "__main__":
 
 
     #regulized logistic regression
-    # LAMADA = [2,1,0.1,0.001,0.00001,0]
-    # for Lamada in LAMADA:
-    #     length_of_weights,reg_train_Weights_2vs3,reg_train_accuracy_2vs3=regularized_gradient_descent('l2',Lamada,train_input_2vs3,train_target_2vs3)
-    #     #plot _accuracy of training set over epochs with different lamada
-    #     #plot_accuracy(reg_train_accuracy_2vs3)
-    #     plot_length_of_weights(length_of_weights)
-    # ax = plt.gca()
-    # ax.legend(["lamada = 2","lamada = 1","lamada = 0.1","lamada = 0.001","lamada = 0.00001","lamada = 0"])
-    # plt.show()
+    LAMADA = [2,1,0.1,0.001,0.00001,0]
+    for Lamada in LAMADA:
+        length_of_weights,reg_train_Weights_2vs3,reg_train_accuracy_2vs3,test_accuracy_2vs3=regularized_gradient_descent('l2',Lamada,train_input_2vs3,train_target_2vs3,test_input_2vs3,test_target_2vs3)
+        ##plot _accuracy of training set over epochs with different lamada
+        # plot_accuracy(reg_train_accuracy_2vs3)
+        # ax = plt.gca()
+        # ax.set_title("Accuracy over Training with different lamada")
+        # ax.set_xlabel("Training Times")
+        # ax.set_ylabel("Accuracy")
+
+        ## plot length of weights
+        # plot_length_of_weights(length_of_weights)
+        # ax = plt.gca()
+        # ax.set_title("Lengths of Weights over Training with different lamada")
+        # ax.set_xlabel("Training Times")
+        # ax.set_ylabel("Lengths of Weights")
+
+        ## plot error with different lamada
+        # plot_accuracy(1-np.array(test_accuracy_2vs3))
+        # plt.scatter(np.log10(Lamada),1-test_accuracy_2vs3[-1])
+
+
+
+
+    ax = plt.gca()
+    ax.legend(["lamada = 2","lamada = 1","lamada = 0.1","lamada = 0.001","lamada = 0.00001","lamada = 0"])
+    plt.show()
 
 
 
