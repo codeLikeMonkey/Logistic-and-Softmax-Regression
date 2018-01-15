@@ -133,6 +133,55 @@ def gradient_descent(train_set,train_target,hold_out_set,hold_out_target,test_se
         train_set_weights = train_set_weights + eta * np.dot(train_set,train_target - sigmoid(train_set_weights,train_set))
     
     return train_set_weights,train_set_accuracy,hold_out_accuracy,test_set_accuracy,train_set_loss,hold_out_loss,test_set_loss
+
+
+
+def mini_batch_gradient_descent(train_set,train_target):
+    train_set_weights = np.zeros((train_set.shape[0], 1))
+    train_set_weights[-1] = 1
+    train_set_accuracy = []
+    hold_out_accuracy = []
+    test_set_accuracy = []
+    train_set_loss = []
+    hold_out_loss = []
+    test_set_loss = []
+    eta_0 = 0.001
+    T = 100
+    how_many_mini_batches = 10
+
+    batches_sizes = [train_set.shape[1] // how_many_mini_batches] * how_many_mini_batches
+    random_index = np.arange((train_set.shape[1]//how_many_mini_batches) * how_many_mini_batches)
+    np.random.shuffle(random_index)
+    random_mini_batches_set = np.array([train_set[:,x] for x in np.split(random_index,how_many_mini_batches)])
+    random_mini_batches_target = np.array([train_target[x].squeeze() for x in np.split(random_index, how_many_mini_batches)])
+
+    max_epoch = 4
+
+    update_times = 0
+
+    for epoch in range(max_epoch):
+        for i in range(how_many_mini_batches):
+            update_times +=1
+            eta = eta = eta_0 / (1 + update_times / T)
+            train_set_weights = train_set_weights + eta * np.dot(random_mini_batches_set[i],random_mini_batches_target - sigmoid(train_set_weights,random_mini_batches_set[i]))
+            train_set_accuracy.append(1 - check(train_set_weights, train_set, train_target))
+    return train_set_weights,train_set_accuracy
+
+
+    # for epoch in range(100):
+    #     train_set_accuracy.append(1 - check(train_set_weights, train_set, train_target))
+    #     # hold_out_accuracy.append(1 - check(train_set_weights, hold_out_set, hold_out_target))
+    #     # test_set_accuracy.append(1 - check(train_set_weights, test_set, test_target))
+    #     #
+    #     train_set_loss.append(loss(train_target, sigmoid(train_set_weights, train_set)))
+    #     # hold_out_loss.append(loss(hold_out_target, sigmoid(train_set_weights, hold_out_set)))
+    #     # test_set_loss.append(loss(test_target, sigmoid(train_set_weights, test_set)))
+    #
+    #     eta = eta_0 / (1 + epoch / T)
+    #     train_set_weights = train_set_weights + eta * np.dot(train_set,train_target - sigmoid(train_set_weights, train_set))
+
+    return train_set_weights, train_set_accuracy#, hold_out_accuracy, test_set_accuracy, train_set_loss, hold_out_loss, test_set_loss
+
         
     
 
@@ -239,9 +288,11 @@ if __name__ == "__main__":
     train_input_2vs3,train_target_2vs3,hold_out_input_2vs3,hold_out_target_2vs3 = make_train_data(2,3)
     test_input_2vs3, test_target_2vs3 = make_test_data(2, 3)
 
-    train_Weights_2vs3,train_accuracy_2vs3,hold_out_accuracy_2vs3,test_set_accuracy_2vs3,train_set_loss_2vs3,hold_out_loss_2vs3,test_set_loss_2vs3 = gradient_descent(train_input_2vs3, train_target_2vs3,hold_out_input_2vs3,hold_out_target_2vs3,test_input_2vs3,test_target_2vs3)
+    # train_Weights_2vs3,train_accuracy_2vs3,hold_out_accuracy_2vs3,test_set_accuracy_2vs3,train_set_loss_2vs3,hold_out_loss_2vs3,test_set_loss_2vs3 = gradient_descent(train_input_2vs3, train_target_2vs3,hold_out_input_2vs3,hold_out_target_2vs3,test_input_2vs3,test_target_2vs3)
     # #train_Weights_2vs3,train_accuracy_2vs3 = gradient(train_input_2vs3,train_target_2vs3)
     #
+
+    train_Weights_2vs3, train_accuracy_2vs3 = mini_batch_gradient_descent(train_input_2vs3, train_target_2vs3)
     # plt.figure(1)
     # ax = plt.gca()
     # ax.set_title("Weights Pattern 2 vs 3")
@@ -255,31 +306,31 @@ if __name__ == "__main__":
     # ax.set_xlabel("Training Epochs")
     # ax.set_ylabel("Correction Rate Percentage ")
     # plot_accuracy(train_accuracy_2vs3)
-    # plot_accuracy(hold_out_accuracy_2vs3)
-    # plot_accuracy(test_set_accuracy_2vs3)
+    # # plot_accuracy(hold_out_accuracy_2vs3)
+    # # plot_accuracy(test_set_accuracy_2vs3)
     # plt.show()
     #
-    plt.figure(3)
-    ax = plt.gca()
-    # ax.grid()
-    ax.set_title("Loss (E) over Training")
-    ax.set_xlabel("Training Epochs")
-    plot_loss(train_set_loss_2vs3,'r')
-    plot_loss(hold_out_loss_2vs3,'b')
-    plot_loss(test_set_loss_2vs3,'g')
-    # ax.legend(['Training Set','Hold Out Set','Test Set'])
-    plt.show()
+    # plt.figure(3)
+    # ax = plt.gca()
+    # # ax.grid()
+    # ax.set_title("Loss (E) over Training")
+    # ax.set_xlabel("Training Epochs")
+    # plot_loss(train_set_loss_2vs3,'r')
+    # plot_loss(hold_out_loss_2vs3,'b')
+    # plot_loss(test_set_loss_2vs3,'g')
+    # # ax.legend(['Training Set','Hold Out Set','Test Set'])
+    # plt.show()
 
 
     #regulized logistic regression
-    # LAMADA = [2,1,0.1,0.001,0.00001]
+    # LAMADA = [2,1,0.1,0.001,0.00001,0]
     # for Lamada in LAMADA:
     #     length_of_weights,reg_train_Weights_2vs3,reg_train_accuracy_2vs3=regularized_gradient_descent('l2',Lamada,train_input_2vs3,train_target_2vs3)
     #     #plot _accuracy of training set over epochs with different lamada
-    #     # plot_accuracy(reg_train_accuracy_2vs3)
+    #     #plot_accuracy(reg_train_accuracy_2vs3)
     #     plot_length_of_weights(length_of_weights)
     # ax = plt.gca()
-    # ax.legend(["lamada = 2","lamada = 1","lamada = 0.1","lamada = 0.001","lamada = 0.00001"])
+    # ax.legend(["lamada = 2","lamada = 1","lamada = 0.1","lamada = 0.001","lamada = 0.00001","lamada = 0"])
     # plt.show()
 
 
