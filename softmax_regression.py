@@ -28,6 +28,16 @@ def gradient_descent(Lamada, train_set, train_target):
     train_weights_mat = np.zeros((785,10))
     train_weights_mat[-1,:] = 1
 
+    max_epoch = 4
+    number_of_mini_batches = 10
+
+    # batches_sizes = np.array([train_set.shape[1]//number_of_mini_batches] * number_of_mini_batches)
+    random_index = np.arange(train_set.shape[1]// number_of_mini_batches * number_of_mini_batches)
+    np.random.shuffle(random_index)
+
+    random_mini_batches_set  = [train_set[:,x ]for x in np.split(random_index,number_of_mini_batches)]
+    random_mini_batches_target = [train_target[x,:]for x in np.split(random_index,number_of_mini_batches)]
+
 
     eta_0 = 0.01
     T = 50
@@ -58,8 +68,8 @@ def make_train_data():
     mndata.gz = True
     images, labels = mndata.load_training()
 
-    images = images[0:1000]
-    labels = labels[0:1000]
+    images = images[0:30]
+    labels = labels[0:30]
 
     # intialize target maxtrix
     train_target = np.zeros((len(labels),10))
