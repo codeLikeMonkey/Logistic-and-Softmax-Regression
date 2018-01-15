@@ -22,12 +22,30 @@ def sigmoid(W,X):
     return Y.T
 
 
+def loss(Target,Y):
+    '''
+
+    :param Target: target, N * c vector for example, training target, test target, hold out target
+    :param Y: sigmoid result N * c vector
+    :return: loss, float
+    '''
+    E = np.sum(np.diag(np.dot(Target.T,np.log10(Y+1e-10))))
+
+    return -E.astype(float)/Target.shape[0]
+
+
+
+
 def gradient_descent(Lamada, train_set, train_target,test_set,test_target):
 
     train_set_accuracy = []
     test_set_accuracy = []
     train_weights_mat = np.zeros((785,10))
     train_weights_mat[-1,:] = 1
+
+    train_loss = []
+    hold_out_loss = []
+    test_loss = []
     # hold_out_set = train_set_all[:,0:train_set_all.shape[1]//10]
     # hold_out_target = train_target_all[0:train_set_all.shape[1]//10,:]
     # train_set = train_set_all[:,train_set_all.shape[1]//10:]
@@ -67,6 +85,9 @@ def gradient_descent(Lamada, train_set, train_target,test_set,test_target):
             train_set_accuracy.append(check(train_weights_mat,train_set,train_target))
             hold_out_accuracy.append(check(train_weights_mat,hold_out_set,hold_out_target))
             test_set_accuracy.append(check(train_weights_mat,test_set,test_target))
+            train_loss.append(loss(train_target,sigmoid(train_weights_mat,train_set)))
+            hold_out_loss.append(loss(hold_out_target,sigmoid(train_weights_mat,hold_out_set)))
+            test_loss.append(loss(test_target,sigmoid(train_weights_mat,test_set)))
             # print("update times : %s accuracy %s" % (update_times,train_set_accuracy[-1]))
             train_weights_mat = train_weights_mat + eta * (np.dot(random_mini_batches_set[i],random_mini_batches_target[i] - sigmoid(train_weights_mat,random_mini_batches_set[i])) - Lamada * 2 * train_weights_mat)
         # if len(train_set_accuracy)>4 and train_set_accuracy[-4]<train_set_accuracy[-3]<train_set_accuracy[-2]<train_set_accuracy[-1]:
@@ -82,7 +103,7 @@ def gradient_descent(Lamada, train_set, train_target,test_set,test_target):
     #     train_set_accuracy.append(check(train_weights_mat,train_set,train_target))
     #     train_weights_mat = train_weights_mat + eta * (np.dot(train_set, train_target - sigmoid(train_weights_mat, train_set)) - Lamada * 2 * train_weights_mat)
 
-    return train_set_accuracy,hold_out_accuracy,test_set_accuracy
+    return train_weights_mat,train_set_accuracy,hold_out_accuracy,test_set_accuracy,train_loss,hold_out_loss,test_loss
 
 
 def plot_accuracy(accuracy):
@@ -95,6 +116,14 @@ def plot_accuracy(accuracy):
     y = np.array(accuracy) * 100
 
     # plt.plot(x,y,marker = '.',linestyle = '-')
+    plt.plot(x, y)
+
+def plot_loss(loss):
+
+    x = np.arange(len(loss))
+    y = np.array(loss)
+
+    # plt.plot(x, y, marker='.', linestyle='-',color = color)
     plt.plot(x, y)
 
 
@@ -144,13 +173,39 @@ if __name__ == "__main__":
     test_set,test_target  = make_test_data()
     # train_weights : 785 * 10
     #
-    train_accuracy,hold_out_accuracy,test_accuracy = gradient_descent(0.1,train_set,train_target,test_set,test_target)
+    train_weights_mat,train_accuracy,hold_out_accuracy,test_accuracy,train_loss,hold_out_loss,test_loss = gradient_descent(0.1,train_set,train_target,test_set,test_target)
+    #plot accuccy with train,hold out and test
+    plt.figure(1)
     plot_accuracy(train_accuracy)
     plot_accuracy(hold_out_accuracy)
     plot_accuracy(test_accuracy)
     plt.gca().legend(["train","hold out","test"])
-
+    plt.gca().set_title("softmax accuracy over training ")
     plt.show()
+
+
+    #plot loss with train, hold out and test
+    plt.figure(2)
+    plot_loss(train_loss)
+    plot_loss(hold_out_loss)
+    plot_loss(test_loss)
+    plt.gca().legend(["train", "hold out", "test"])
+    plt.gca().set_title("softmax average loss over training")
+    plt.show()
+
+    #plot digits weights
+    plt.figure(2)
+
+    for i in range(10):
+        digit_weight = train_weights_mat[:,i][:-1].reshape(28,28)
+        plt.subplot(2,5,i+1)
+        plt.imshow(digit_weight)
+        plt.gca().set_title("%d"%i)
+    plt.show()
+
+
+
+
 
 
 
