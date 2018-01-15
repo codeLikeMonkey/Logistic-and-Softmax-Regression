@@ -22,9 +22,10 @@ def sigmoid(W,X):
     return Y.T
 
 
-def gradient_descent(Lamada, train_set, train_target):
+def gradient_descent(Lamada, train_set, train_target,test_set,test_target):
 
     train_set_accuracy = []
+    test_set_accuracy = []
     train_weights_mat = np.zeros((785,10))
     train_weights_mat[-1,:] = 1
     # hold_out_set = train_set_all[:,0:train_set_all.shape[1]//10]
@@ -52,7 +53,8 @@ def gradient_descent(Lamada, train_set, train_target):
     hold_out_accuracy = []
 
 
-    eta_0 = 0.001
+
+    eta_0 = 0.0001
     T = 50
     update_times = 0
 
@@ -64,12 +66,13 @@ def gradient_descent(Lamada, train_set, train_target):
             eta = eta_0 / (1 + update_times / T)
             train_set_accuracy.append(check(train_weights_mat,train_set,train_target))
             hold_out_accuracy.append(check(train_weights_mat,hold_out_set,hold_out_target))
+            test_set_accuracy.append(check(train_weights_mat,test_set,test_target))
             # print("update times : %s accuracy %s" % (update_times,train_set_accuracy[-1]))
             train_weights_mat = train_weights_mat + eta * (np.dot(random_mini_batches_set[i],random_mini_batches_target[i] - sigmoid(train_weights_mat,random_mini_batches_set[i])) - Lamada * 2 * train_weights_mat)
-        if len(train_set_accuracy)>4 and train_set_accuracy[-4]<train_set_accuracy[-3]<train_set_accuracy[-2]<train_set_accuracy[-1]:
-            break
-        # if len(hold_out_accuracy)>4 and hold_out_accuracy[-4]<hold_out_accuracy[-3]<hold_out_accuracy[-2]<hold_out_accuracy[-1]:
+        # if len(train_set_accuracy)>4 and train_set_accuracy[-4]<train_set_accuracy[-3]<train_set_accuracy[-2]<train_set_accuracy[-1]:
         #     break
+        if len(hold_out_accuracy)>4 and hold_out_accuracy[-4]<hold_out_accuracy[-3]<hold_out_accuracy[-2]<hold_out_accuracy[-1]:
+            break
 
 
 
@@ -79,7 +82,7 @@ def gradient_descent(Lamada, train_set, train_target):
     #     train_set_accuracy.append(check(train_weights_mat,train_set,train_target))
     #     train_weights_mat = train_weights_mat + eta * (np.dot(train_set, train_target - sigmoid(train_weights_mat, train_set)) - Lamada * 2 * train_weights_mat)
 
-    return train_set_accuracy,hold_out_accuracy
+    return train_set_accuracy,hold_out_accuracy,test_set_accuracy
 
 
 def plot_accuracy(accuracy):
@@ -114,17 +117,38 @@ def make_train_data():
     return train_images, train_target
 
 
+def make_test_data():
+    mndata = MNIST('./mnist_data')
+    mndata.gz = True
+    images, labels = mndata.load_testing()
+
+    images = images[0:2000]
+    labels = labels[0:2000]
+
+    # intialize target maxtrix
+    test_target = np.zeros((len(labels),10))
+    # mak
+    for i in range(len(labels)):
+        test_target[i,labels[i]] = 1
+
+    test_images = np.concatenate((np.array(images), np.ones((len(images), 1))), axis=1).T
+
+    return test_images, test_target
+
+
 
 if __name__ == "__main__":
     # train_set : 785 * 20000
     # train_target : 20000 * 10
     train_set, train_target = make_train_data()
+    test_set,test_target  = make_test_data()
     # train_weights : 785 * 10
     #
-    train_accuracy,hold_out_accuracy = gradient_descent(0.1,train_set,train_target)
+    train_accuracy,hold_out_accuracy,test_accuracy = gradient_descent(0.1,train_set,train_target,test_set,test_target)
     plot_accuracy(train_accuracy)
     plot_accuracy(hold_out_accuracy)
-    plt.gca().legend(["train","hold out"])
+    plot_accuracy(test_accuracy)
+    plt.gca().legend(["train","hold out","test"])
 
     plt.show()
 
