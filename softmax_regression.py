@@ -22,20 +22,20 @@ def sigmoid(W,X):
     return Y.T
 
 
-def gradient_descent(train_images, train_target):
+def gradient_descent(Lamada, train_set, train_target):
 
     train_set_accuracy = []
     train_weights_mat = np.zeros((785,10))
     train_weights_mat[-1,:] = 1
 
 
-    eta_0 = 0.001
-    T = 100
+    eta_0 = 0.01
+    T = 50
 
-    for update_times in range(1000):
+    for update_times in range(500):
         eta = eta_0 / (1 + update_times / T)
-        train_set_accuracy.append(check(train_weights_mat,train_images,train_target))
-        train_weights_mat = train_weights_mat + eta * np.dot(train_images, train_target - sigmoid(train_weights_mat, train_images))
+        train_set_accuracy.append(check(train_weights_mat,train_set,train_target))
+        train_weights_mat = train_weights_mat + eta * (np.dot(train_set, train_target - sigmoid(train_weights_mat, train_set)) - Lamada * 2 * train_weights_mat)
 
     return train_set_accuracy
 
@@ -58,8 +58,8 @@ def make_train_data():
     mndata.gz = True
     images, labels = mndata.load_training()
 
-    images = images[0:2000]
-    labels = labels[0:2000]
+    images = images[0:1000]
+    labels = labels[0:1000]
 
     # intialize target maxtrix
     train_target = np.zeros((len(labels),10))
@@ -74,12 +74,12 @@ def make_train_data():
 
 
 if __name__ == "__main__":
-    # train_images : 785 * 20000
+    # train_set : 785 * 20000
     # train_target : 20000 * 10
-    train_images, train_target = make_train_data()
+    train_set, train_target = make_train_data()
     # train_weights : 785 * 10
     #
-    train_accuracy = gradient_descent(train_images,train_target)
+    train_accuracy = gradient_descent(0.1,train_set,train_target)
     plot_accuracy(train_accuracy)
     plt.show()
 
